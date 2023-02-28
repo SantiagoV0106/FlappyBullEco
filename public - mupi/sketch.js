@@ -1,10 +1,12 @@
 const NGROK = `${window.location.hostname}`;
 let socket = io(NGROK, { path: '/real-time' });
-console.log('172.30.213.141', NGROK);
-
+console.log('192.168.1.28', NGROK);
+let deviceWidth, deviceHeight = 0;
+let mupiWidth, mupiHeight = 0;
 const anchoescenario = 1280;
 const largoescenario = 720;
 let pantallas = 1;
+let istapmupi = false
 let canvas;
 let toro;
 let boton;
@@ -16,19 +18,35 @@ let fps = 0;
 
 function setup() {
   canvas = createCanvas(anchoescenario, largoescenario);
-  windowResized();
+  windowResized()
   toro = new Toro();
   limite = new Limite();
   tubos.push(new Tubo);
-  boton = createButton('Cambiar Pantalla');
-  boton.position(anchoescenario / 4 * 2.8, largoescenario);
-  boton.mousePressed(cambiaPantallas);
+  //boton = createButton('Cambiar Pantalla');
+  //boton.position(anchoescenario / 4 * 2.8, largoescenario);
+  //boton.mousePressed(cambiaPantallas);
 }
 
 function draw() {
   background(220);
+  console.log(istapmupi);
+  toro.pintar();
+  limite.pintar();
+  for (const tubo of tubos) {
+    tubo.pintar()
+  }
+
+  if (fps * vellimite % 400 == 0) {
+    tubos.push(new Tubo)
+  }
+
+  if (gravedad) {
+    fps ++
+  }
+
+
   
-  switch (pantallas) {
+  /*switch (pantallas) {
     case 1:
       textSize(30);
       text('Aqui va el código QR del mupi', anchoescenario / 3, 200);     
@@ -64,7 +82,8 @@ function draw() {
         
         break;
         
-  }
+ }
+ */
 }
 
 function windowResized(){
@@ -78,7 +97,7 @@ function keyPressed() {
 }
 
 function mousePressed() { 
-  boton.mousePressed(cambiaPantallas);
+  //boton.mousePressed(cambiaPantallas);
   click();
 }
 
@@ -99,9 +118,14 @@ function cambiaPantallas() {
 }
 
 
+function updateTap(newValue) {
+  istapmupi = istapmupi 
+  return istapmupi
+}
+
 //aqui se agrega la función que conecta con el cel
-function click(){
-  if (gravedad) {
+function click(){ 
+  if (gravedad && istapmupi) {
     toro.gravedadtoro.set(createVector(0,-5))
   } else {
     toro.resetVariable()
@@ -187,7 +211,16 @@ function Tubo() {
     ]
   }
 }
-socket.on('display-Hola', messages => {
-  console.log(messages)
+
+socket.on('mupi-size', deviceSize => {
+  let { deviceType, windowWidth, windowHeight } = deviceSize;
+  deviceWidth = windowWidth;
+  deviceHeight = windowHeight;
+  console.log(`User is using an ${deviceType} smartphone size of ${deviceWidth} and ${deviceHeight}`);
+});
+
+socket.on('tapeado-mupi', istap => {
+  istapmupi = istap
 })
+
 

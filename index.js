@@ -1,5 +1,5 @@
 import { express, Server, cors, os } from './dependencies.js'
-const SERVER_IP = "172.30.213.141";//CAMBIAR IP SIEMPRE
+const SERVER_IP = "192.168.1.28";//CAMBIAR IP SIEMPRE
 
 const expressApp = express(); 
 const PORT = 5051;
@@ -21,10 +21,15 @@ const io = new Server(httpServer, { path: '/real-time' });
 
 io.on('connection', socket => {
     console.log('Conectado', socket.id);
+
+    socket.on('device-size', deviceSize =>{
+        socket.broadcast.emit('mupi-size',deviceSize)
+    })
+
+    socket.on('tapeado', istap =>{
+        socket.broadcast.emit('tapeado-mupi', istap)
+    })
     
-socket.on('Hola', (messages) => {
-console.log(messages)
-socket.broadcast.emit('display-Hola', messages)})
 });
 
 let userData;

@@ -1,20 +1,34 @@
 const NGROK = `${window.location.hostname}`;
-console.log('172.30.213.141', NGROK);
+console.log('192.168.1.28', NGROK);
 let socket = io(NGROK, { path: '/real-time' });
-const anchoescenario = 1280;
-const largoescenario = 720;
+let controllerX, controllerY = 0
 let pantallas = 1;
 let canvas;
-let boton;
-let boton2;
-let messages = "A";
+let istap = false
 let user = {};
 
 
 function setup() {
-    canvas = createCanvas(anchoescenario, largoescenario);
-    windowResized();
+    canvas = createCanvas(windowWidth, windowHeight);
+    controllerX = windowWidth / 2  
+    controllerY = windowHeight / 2  
 
+    const userAgent = window.navigator.userAgent
+    let deviceType
+
+    if (/iPhone | iPad/.test(userAgent)) {
+      deviceType = 'iOS'
+    } else if (/Android/.test(userAgent)){
+      deviceType = 'Android'
+    }else {
+      deviceType = 'Other'
+    }
+
+    socket.emit('device-size', {deviceType, windowWidth,windowHeight})
+}
+
+    /*
+    
     //Botones de Cambio de pantalla
     boton = createButton('Cambiar Pantalla');
     boton.position(anchoescenario / 4 * 2.8, largoescenario);
@@ -46,14 +60,14 @@ function UserEmail() {
     user['email'] = this.value();
 }
 
-
+*/
 
 
 
   function draw() {
-    background(220);
+    background(0);
     
-    switch (pantallas) {
+   /* switch (pantallas) {
       //Pantalla de tap para pasar al juego y que funciona durante el juego
       case 1:
         inputName.style('display', 'none');
@@ -86,45 +100,44 @@ function UserEmail() {
       default:
         break;
     }
+    */
   }
 
-  socket.emit('Hola',(messages)=>{
-    console.log(messages);;
-  })
-  
-  function windowResized(){
-    if (windowWidth < anchoescenario) {
-      canvas.style('transform', `scale(${windowWidth / width})`)
+  function touchInteraction() {
+    if (touchStarted) {
+      istap = true
+
+    } else if (touchEnded) {
+      istap = false
     }
+
+    socket.emit('tapeado', istap)
+
+  }
+
+
+  function touchEnded() {
+
+    touchInteraction()
+
+  }
+  function touchStarted() {
+
+    touchInteraction()
+
   }
   
-  function keyPressed() {
-    click();
-  }
   
   function mousePressed() { 
-    boton.mousePressed(cambiaPantallas);
-    boton2.mousePressed(cambiaPantallas);
-    click();
-  }
-  
-  function cambiaPantallas() {
-    switch (pantallas) {
-      case 1:      
-          pantallas = 2
-         break;
-         case 2: 
-        pantallas = 3
-        break;
-    }
-    
+    istap = true
+    socket.emit('tapeado', istap)  
   }
 
-  function click(){
-    if (mousePressed == true) {
-        console.log('funciona el click')
-    } 
+  function mouseReleased() {
+    istap = false    
+    socket.emit('tapeado', istap)  
   }
+
 
   //Function de guardar usuarios
   async function userData() {
